@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(downsampler)
+
+find_package(catkin REQUIRED COMPONENTS
+  nodelet
+  pcl_conversions
+  pcl_ros
+  roscpp
+  sensor_msgs
+)
+
+catkin_package(
+  CATKIN_DEPENDS nodelet pcl_conversions pcl_ros roscpp sensor_msgs
+)
+
+include_directories( include
+  ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+)
+
+add_library(downsampler
+   src/downsampler.cpp
+)
+
+install(FILES nodelet_plugins.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)               

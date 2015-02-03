@@ -1,0 +1,8 @@
+<library path="lib/libdownsampler">
+    
+    <class name="downsampler/downsampler" type="downsampler::Downsampler" base_class_type="nodelet::Nodelet">
+        <description>
+            Downsamples input point cloud.
+        </description>
+    </class>
+</library>
