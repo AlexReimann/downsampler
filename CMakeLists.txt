@@ -9,8 +9,12 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
-catkin_package(
-  CATKIN_DEPENDS nodelet pcl_conversions pcl_ros roscpp sensor_msgs
+catkin_package(CATKIN_DEPENDS
+  nodelet
+  pcl_conversions
+  pcl_ros
+  roscpp
+  sensor_msgs
 )
 
 include_directories( include
@@ -18,10 +22,12 @@ include_directories( include
   ${PCL_INCLUDE_DIRS}
 )
 
-add_library(downsampler
+add_library(${PROJECT_NAME}
    src/downsampler.cpp
 )
 
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+
 install(FILES nodelet_plugins.xml
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)               
+)

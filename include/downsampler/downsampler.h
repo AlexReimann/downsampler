@@ -12,7 +12,6 @@ class Downsampler : public nodelet::Nodelet
 {
 public:
   virtual void onInit();
-
   virtual void downsample_cloud_cb(const sensor_msgs::PointCloud2ConstPtr& cloud_msg);
 
 protected:
@@ -24,7 +23,7 @@ protected:
   double leaf_size_;
 
   ros::Duration interval_;
-  ros::Time last_call_;
+  ros::Time next_call_time_;
 
 };
 

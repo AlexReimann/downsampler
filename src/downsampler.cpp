@@ -25,17 +25,20 @@ void Downsampler::onInit()
   double rate;
   private_nh.param("rate", rate, 30.0);
 
-  interval_ = ros::Duration(1.0 / rate);
-  last_call_ = ros::Time::now();
+  if(rate == 0)
+    interval_ = ros::Duration(0);
+  else
+    interval_ = ros::Duration(1.0 / rate);
+  next_call_time_ = ros::Time::now();
 
   ROS_INFO_STREAM("Downsampling points using a leaf size of '" << leaf_size_ << "' m, running at " << rate << " Hz.");
 }
 
 void Downsampler::downsample_cloud_cb(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {
-  if (ros::Time::now() < last_call_ + interval_)
+  if (ros::Time::now() <= next_call_time_)
     return;
-  last_call_ = ros::Time::now();
+  next_call_time_ = next_call_time_ + interval_;
 
   boost::shared_ptr < pcl::PCLPointCloud2 > cloud(new pcl::PCLPointCloud2);
   pcl::PCLPointCloud2ConstPtr cloudPtr(cloud);
