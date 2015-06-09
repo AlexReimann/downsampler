@@ -61,8 +61,8 @@ void Downsampler::downsample_cloud_cb(const sensor_msgs::PointCloud2ConstPtr& cl
     sor.filter(*cloud);
   }
 
-  sensor_msgs::PointCloud2 downsampled;
-  pcl_conversions::moveFromPCL(*cloud, downsampled);
+  sensor_msgs::PointCloud2Ptr downsampled(new sensor_msgs::PointCloud2);
+  pcl_conversions::moveFromPCL(*cloud, *downsampled);
   pub_downsampled_cloud_.publish(downsampled);
 }
 
