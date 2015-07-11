@@ -28,6 +28,10 @@ add_library(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
+install(TARGETS ${PROJECT_NAME}
+        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+
 install(FILES nodelet_plugins.xml
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
