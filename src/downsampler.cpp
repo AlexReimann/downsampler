@@ -2,6 +2,8 @@
 #include <pluginlib/class_list_macros.h>
 
 #include <boost/shared_ptr.hpp>
+#include <pcl/point_types.h>
+#include <pcl_ros/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/voxel_grid.h>
@@ -13,8 +15,8 @@ void Downsampler::onInit()
 {
   ros::NodeHandle& nh = getNodeHandle();
 
-  sub_cloud_ = nh.subscribe < sensor_msgs::PointCloud2 > ("input_cloud", 1, &Downsampler::downsample_cloud_cb, this);
-  pub_downsampled_cloud_ = nh.advertise < sensor_msgs::PointCloud2 > ("downsampled_points", 1);
+  sub_cloud_ = nh.subscribe<sensor_msgs::PointCloud2>("input_cloud", 1, &Downsampler::downsample_cloud_cb, this);
+  pub_downsampled_cloud_ = nh.advertise<pcl::PointCloud<pcl::PointXYZ> >("downsampled_points", 1);
 
   ros::NodeHandle& private_nh = getPrivateNodeHandle();
 
@@ -25,7 +27,7 @@ void Downsampler::onInit()
   double rate;
   private_nh.param("rate", rate, 30.0);
 
-  if(rate == 0)
+  if (rate == 0)
     interval_ = ros::Duration(0);
   else
     interval_ = ros::Duration(1.0 / rate);
@@ -40,29 +42,36 @@ void Downsampler::downsample_cloud_cb(const sensor_msgs::PointCloud2ConstPtr& cl
     return;
   next_call_time_ = next_call_time_ + interval_;
 
-  boost::shared_ptr < pcl::PCLPointCloud2 > cloud(new pcl::PCLPointCloud2);
-  pcl::PCLPointCloud2ConstPtr cloudPtr(cloud);
-  boost::shared_ptr < pcl::PCLPointCloud2 > filteredCloud(new pcl::PCLPointCloud2);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cut_cloud(new pcl::PointCloud<pcl::PointXYZ>());
 
-  pcl_conversions::toPCL(*cloud_msg, *cloud);
+  pcl::PointCloud<pcl::PointXYZ> input_cloud;
+  pcl::fromROSMsg(*cloud_msg, input_cloud);
 
-  pcl::PassThrough < pcl::PCLPointCloud2 > pass;
-  pass.setInputCloud(cloudPtr);
+  pcl::PassThrough<pcl::PointXYZ> pass;
+  pass.setInputCloud(input_cloud.makeShared());
   pass.setFilterFieldName("z");
   pass.setFilterLimits(min_range_, max_range_);
-  pass.filter(*filteredCloud);
-  cloudPtr = filteredCloud;
+  pass.filter(*cut_cloud);
 
-  if (leaf_size_ != 0)
+  if (leaf_size_ == 0.0)
   {
-    pcl::VoxelGrid < pcl::PCLPointCloud2 > sor;
-    sor.setInputCloud(cloudPtr);
-    sor.setLeafSize(leaf_size_, leaf_size_, leaf_size_);
-    sor.filter(*cloud);
+    sensor_msgs::PointCloud2Ptr downsampled(new sensor_msgs::PointCloud2);
+    pcl::toROSMsg(*cut_cloud, *downsampled);
+
+    pub_downsampled_cloud_.publish(downsampled);
+    return;
   }
 
+  pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+
+  pcl::VoxelGrid<pcl::PointXYZ> sor;
+  sor.setInputCloud(cut_cloud);
+  sor.setLeafSize(leaf_size_, leaf_size_, leaf_size_);
+  sor.filter(*downsampled_cloud);
+
   sensor_msgs::PointCloud2Ptr downsampled(new sensor_msgs::PointCloud2);
-  pcl_conversions::moveFromPCL(*cloud, *downsampled);
+  pcl::toROSMsg(*downsampled_cloud, *downsampled);
+
   pub_downsampled_cloud_.publish(downsampled);
 }
 
