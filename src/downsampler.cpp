@@ -47,11 +47,18 @@ void Downsampler::downsample_cloud_cb(const sensor_msgs::PointCloud2ConstPtr& cl
   pcl::PointCloud<pcl::PointXYZ> input_cloud;
   pcl::fromROSMsg(*cloud_msg, input_cloud);
 
-  pcl::PassThrough<pcl::PointXYZ> pass;
-  pass.setInputCloud(input_cloud.makeShared());
-  pass.setFilterFieldName("z");
-  pass.setFilterLimits(min_range_, max_range_);
-  pass.filter(*cut_cloud);
+  if(max_range_ != 0.0)
+  {
+    pcl::PassThrough<pcl::PointXYZ> pass;
+    pass.setInputCloud(input_cloud.makeShared());
+    pass.setFilterFieldName("z");
+    pass.setFilterLimits(min_range_, max_range_);
+    pass.filter(*cut_cloud);
+  }
+  else
+  {
+    cut_cloud = input_cloud.makeShared();
+  }
 
   if (leaf_size_ == 0.0)
   {
