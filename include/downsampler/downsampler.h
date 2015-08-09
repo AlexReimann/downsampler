@@ -21,6 +21,8 @@ protected:
   double min_range_;
   double max_range_;
   double leaf_size_;
+  double filter_radius_;
+  int min_points_threshold_;
 
   ros::Duration interval_;
   ros::Time next_call_time_;
